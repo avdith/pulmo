@@ -74,6 +74,9 @@ select.st.todo{color:var(--todo)}
 .tb2 select{flex:1 1 140px;min-width:0;padding:9px 8px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit}
 .tb2 button{padding:9px 12px;border:1px solid var(--accent);border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:600}
 #pv{display:none}
+section>h2{cursor:pointer;user-select:none}
+section.col>:not(h2){display:none}
+.tb2 button.gh{background:var(--card);color:var(--ink);border-color:var(--line);font-weight:400}
 @media print{
   header,main,.foot{display:none!important}
   body{background:#fff;color:#000}
@@ -112,7 +115,8 @@ select.st.todo{color:var(--todo)}
       <option value="email">Email Photo (to be emailed)</option>
       <option value="photo">Photographed</option>
       <option value="nosrc">No info: photographed or email?</option>
-      <option value="nocard">Card not collected</option>
+      <option value="hascard">Card collected</option>
+      <option value="nocard">Card NOT collected</option>
     </select>
     <select id="srt" aria-label="Sort">
       <option value="sec">Sort: by group</option>
@@ -122,6 +126,7 @@ select.st.todo{color:var(--todo)}
       <option value="src">By source (no info first)</option>
       <option value="num">By photo #</option>
     </select>
+    <button id="fold" class="gh">Fold all</button>
     <button id="pdf">Export PDF</button>
   </div>
 </header>
@@ -218,11 +223,13 @@ function row2(p){
   </div>`;
 }
 const flt=document.getElementById("flt"), srt=document.getElementById("srt");
+let collapsed={}; try{collapsed=JSON.parse(localStorage.getItem("pulmo-collapsed")||"{}");}catch(e){}
+function saveCol(){try{localStorage.setItem("pulmo-collapsed",JSON.stringify(collapsed));}catch(e){}}
 const nrank=p=>{const n=String(numOf(p)||"").trim(); if(!n) return Infinity; const v=Number(n.split(".").pop()); return isNaN(v)?Infinity:v;};
 const srank=p=>({"":0,email:1,photo:2}[src(p)]);
 const FLT={
   all:p=>true, todo:p=>!isDone(p), done:p=>isDone(p), nonum:p=>!String(numOf(p)||"").trim(),
-  email:p=>src(p)==="email", photo:p=>src(p)==="photo", nosrc:p=>src(p)==="", nocard:p=>!cardOf(p)
+  email:p=>src(p)==="email", photo:p=>src(p)==="photo", nosrc:p=>src(p)==="", hascard:p=>!!cardOf(p), nocard:p=>!cardOf(p)
 };
 const SRT={
   id:(a,b)=>a.uid-b.uid, name:(a,b)=>a.name.localeCompare(b.name,"mk")||a.uid-b.uid,
@@ -237,6 +244,7 @@ function visible(){
 }
 function render(){
   const fin1=tab===1?isDone:deOf;
+  const filtering=!!q.value.trim()||hide.checked||(tab===1&&flt.value!=="all");
   document.getElementById("tb").style.display="flex";
   flt.style.display=tab===1?"":"none";
   if(!people.length){
@@ -258,7 +266,8 @@ function render(){
       const list=vis.filter(p=>p.sec===key);
       if(!list.length) continue;
       const pend=list.filter(p=>!fin1(p)), fin=list.filter(fin1);
-      html+=`<section><h2><span>${mk} <small>· ${en}</small></span><small>${all.length-dn} left of ${all.length}</small></h2>
+      const cl=collapsed[key]&&!filtering;
+      html+=`<section class="${cl?"col":""}"><h2 data-sec="${key}"><span>${cl?"▸":"▾"} ${mk} <small>· ${en}</small></span><small>${all.length-dn} left of ${all.length}</small></h2>
         ${hdr}
         ${pend.map(rf).join("")}
         ${fin.length&&pend.length?`<div class="sep">Done (${fin.length})</div>`:""}
@@ -312,6 +321,8 @@ hide.addEventListener("change",render);
 flt.addEventListener("change",render);
 srt.addEventListener("change",render);
 document.getElementById("pdf").onclick=exportPDF;
+main.addEventListener("click",e=>{const h=e.target.closest("h2[data-sec]"); if(!h) return; const k=h.dataset.sec; collapsed[k]=!collapsed[k]; saveCol(); render();});
+document.getElementById("fold").onclick=()=>{const any=SECTIONS.some(([k])=>!collapsed[k]); SECTIONS.forEach(([k])=>collapsed[k]=any); saveCol(); document.getElementById("fold").textContent=any?"Unfold all":"Fold all"; render();};
 document.getElementById("exp").onclick=async()=>{
   const s=JSON.stringify(st);
   try{await navigator.clipboard.writeText(s);alert("Backup copied. Paste it somewhere safe (e.g. Notes).");}catch(e){prompt("Copy this backup:",s);}
