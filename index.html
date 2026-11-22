@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="mk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f7a5c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Pulmo Photo</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#f4f5f3; --card:#fff; --ink:#1d2421; --mute:#7b857f; --line:#e3e7e4;
+  --accent:#1f7a5c; --accent-soft:#e3f2ec; --warn:#a15c00; --warn-soft:#fff1d9; --ok:#1f7a5c; --todo:#b3541e;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#141816;--card:#1c211e;--ink:#e8ece9;--mute:#8d9892;--line:#2c332f;--accent:#4cc99b;--accent-soft:#1d3329;--warn:#f0b35a;--warn-soft:#3a2d14;--ok:#4cc99b;--todo:#f0a070}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:900px;margin:0 auto;padding:0 12px 60px}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:12px}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:13px;margin-bottom:8px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+.sync{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:12px;color:var(--mute);margin:-4px 0 8px}
+.sync button{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit;font-size:12px}
+.tabs{display:flex;gap:6px;margin:0 0 10px}
+.tabs button{flex:1;padding:10px 8px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:600}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.tools{display:flex;gap:8px;margin-top:10px;align-items:center}
+.tools input[type=search]{flex:1;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit}
+.tgl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);white-space:nowrap}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:0 0 14px;overflow:hidden}
+section>h2{margin:0;padding:11px 14px;font-size:13px;letter-spacing:.03em;display:flex;justify-content:space-between;gap:10px;align-items:baseline;border-bottom:1px solid var(--line);background:var(--accent-soft)}
+section>h2 small{font-weight:400;color:var(--mute);letter-spacing:0;white-space:nowrap}
+.cols{display:none}
+.row{padding:10px 14px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.name{font-weight:600}
+.name .n{color:var(--mute);font-weight:400;margin-right:6px;font-variant-numeric:tabular-nums}
+.title{color:var(--mute);font-size:13px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.ctl input[type=text],.ctl select{padding:9px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.ctl input.nt{width:100%;text-align:left;flex:1 1 100%}
+.ctl input[type=text]:not(.nt){width:78px;text-align:center;font-variant-numeric:tabular-nums}
+.cb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);padding:4px 6px;min-height:44px}
+.cb input{width:26px;height:26px;accent-color:var(--accent)}
+select.st{font-weight:600}
+select.st.done{color:var(--ok);border-color:var(--ok)}
+select.st.todo{color:var(--todo)}
+.note{margin-top:6px;font-size:12px;color:var(--warn);background:var(--warn-soft);padding:3px 8px;border-radius:6px;display:inline-block}
+.row.done .name .t,.row.done .title{text-decoration:line-through}
+.row.done{opacity:.6}
+.sep{padding:5px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);background:var(--bg);border-bottom:1px solid var(--line)}
+.empty{text-align:center;color:var(--mute);padding:30px 0}
+.foot{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.foot button{padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit}
+@media (min-width:700px){
+  .cols,.row{display:grid;grid-template-columns:1.4fr 1fr 70px 56px 125px 112px 1.2fr;gap:10px;align-items:center}
+  .cols.d,.row.d{grid-template-columns:1.6fr 1.2fr 90px 90px}
+  .cols{padding:7px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);border-bottom:1px solid var(--line)}
+  .ctl{display:contents;margin:0}
+  .note{grid-column:1/-1;justify-self:start;margin:0}
+  .cb{justify-content:center;padding:0}
+  .ctl input[type=text]:not(.nt){width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Pulmo staff photo checklist</h1>
+  <div class="tabs"><button id="t1" class="on">1 · Collect</button><button id="t2">2 · Design</button></div>
+  <div class="sub" id="sub"></div>
+  <div class="sync"><span id="syncmsg">Not synced</span><button id="signin">Sign in with Google</button></div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search name, title or ID…" autocomplete="off">
+    <label class="tgl"><input type="checkbox" id="hide"> Hide done</label>
+  </div>
+</header>
+<main id="main"></main>
+<div class="foot">
+  <button id="exp">Copy backup</button>
+  <button id="imp">Restore backup</button>
+  <button id="ldp">Load staff list</button><input type="file" id="pf" accept=".json,application/json" hidden>
+</div>
+</div>
+
+<script>
+// [section, listNo, title, name, photo#, photographedByDefault, note]
+const SECTIONS = [
+  ["doc","ДОКТОРИ НА МЕДИЦИНА","Doctors of medicine"],
+  ["nur","МЕДИЦИНСКИ СЕСТРИ/ТЕХНИЧАРИ","Nurses / technicians"],
+  ["rad","ДИПЛОМИРАНИ РАДИОЛОШКИ ТЕХНОЛОЗИ","Radiology technologists"],
+  ["adm","АДМИНИСТРАЦИЈА","Administration"],
+  ["hs","ЗДРАВСТВЕНИ СОРАБОТНИЦИ","Health associates"],
+  ["aux","ПОМОШНО ТЕХНИЧКИ ПЕРСОНАЛ","Support staff"],
+  ["oth","ДОГОВОР НА ДЕЛО","Contract staff"]
+];
+const SECNO={doc:1,nur:2,rad:3,adm:4,hs:5,aux:6,oth:7};
+let people=[];
+function setPeople(D){ people=D.map(r=>({uid:SECNO[r[0]]*100+r[1],id:r[0]+r[1],sec:r[0],title:r[2],name:r[3],num:r[4]||"",pre:!!r[5],note:r[6]||""})); }
+const LSP="pulmo-people-v1";
+try{ const s=localStorage.getItem(LSP); if(s) setPeople(JSON.parse(s)); }catch(e){}
+function D_cur(){ try{return JSON.parse(localStorage.getItem(LSP)||"[]");}catch(e){return [];} }
+function savePeople(arr,fromCloud){
+  setPeople(arr);
+  try{localStorage.setItem(LSP,JSON.stringify(arr));}catch(e){}
+  if(!fromCloud&&peopleRef){ peopleRef.set({list:JSON.stringify(arr)}).catch(e=>msg("Sync error: "+e.code)); }
+  render();
+}
+
+// ---- state ----
+// f[id] = {n:photo#, card:bool, src:""|"photo"|"email", status:"todo"|"done", ph:bool, de:bool}
+let st = {f:{}};
+const LS="pulmo-photo-v2", LS1="pulmo-photo-checklist-v1";
+try{
+  const s=JSON.parse(localStorage.getItem(LS)||"null");
+  if(s&&s.f) st=s;
+  else{ // migrate from first version
+    const o=JSON.parse(localStorage.getItem(LS1)||"null");
+    if(o&&o.done){ for(const id in o.done){ st.f[id]=Object.assign(st.f[id]||{},{status:o.done[id]?"done":"todo"}); if(o.done[id]) st.f[id].src="photo"; }
+      for(const id in (o.nums||{})){ st.f[id]=Object.assign(st.f[id]||{},{n:o.nums[id]}); } }
+  }
+}catch(e){}
+const F=p=>st.f[p.id]||{};
+const status=p=>F(p).status || (p.pre?"done":"todo");
+const isDone=p=>status(p)==="done";
+const src=p=>F(p).src!==undefined ? F(p).src : (p.pre?"photo":"");
+const numOf=p=>F(p).n!==undefined ? F(p).n : p.num;
+const noteOf=p=>F(p).note!==undefined ? F(p).note : p.note;
+const cardOf=p=>!!F(p).card;
+const phOf=p=>F(p).ph!==undefined ? F(p).ph : isDone(p);
+const deOf=p=>!!F(p).de;
+function set(p,k,v){ (st.f[p.id]=st.f[p.id]||{})[k]=v; persist(); push(p.id,k,v); }
+function persist(){ try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){} }
+
+let tab=1;
+const main=document.getElementById("main"), q=document.getElementById("q"), hide=document.getElementById("hide");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function row1(p){
+  const d=isDone(p), s=src(p);
+  return `<div class="row${d?" done":""}" data-id="${p.id}">
+    <div><div class="name"><span class="n">${p.uid}</span><span class="t">${esc(p.name)}</span></div><div class="title">${esc(p.title)}</div></div>
+    <div class="ctl">
+      <input type="text" inputmode="decimal" placeholder="Photo #" value="${esc(numOf(p))}" data-k="n" aria-label="Photo number">
+      <label class="cb"><input type="checkbox" data-k="card" ${cardOf(p)?"checked":""} aria-label="Card collected"><span class="m">Card</span></label>
+      <select data-k="src" aria-label="Photographed or email photo">
+        <option value=""${s===""?" selected":""}>— source —</option>
+        <option value="photo"${s==="photo"?" selected":""}>Photographed</option>
+        <option value="email"${s==="email"?" selected":""}>Email Photo</option>
+      </select>
+      <select data-k="status" class="st ${d?"done":"todo"}" aria-label="Status">
+        <option value="todo"${d?"":" selected"}>Incomplete</option>
+        <option value="done"${d?" selected":""}>DONE</option>
+      </select>
+      <input type="text" class="nt" placeholder="Notes" value="${esc(noteOf(p))}" data-k="note" aria-label="Notes">
+    </div>
+  </div>`;
+}
+function row2(p){
+  const d=deOf(p);
+  return `<div class="row d${d?" done":""}" data-id="${p.id}">
+    <div><div class="name"><span class="n">${p.uid}</span><span class="t">${esc(p.name)}</span></div><div class="title">${esc(p.title)}</div></div>
+    <div class="ctl">
+      <label class="cb"><input type="checkbox" data-k="ph" ${phOf(p)?"checked":""} aria-label="Photo"><span class="m">Photo</span></label>
+      <label class="cb"><input type="checkbox" data-k="de" ${d?"checked":""} aria-label="Design"><span class="m">Design</span></label>
+    </div>
+  </div>`;
+}
+function render(){
+  const term=q.value.trim().toLowerCase();
+  const fin1=tab===1?isDone:deOf;
+  if(!people.length){
+    main.innerHTML='<div class="empty">No staff list loaded yet.<br>Sign in with Google (top), or tap <b>Load staff list</b> below and choose <b>staff.json</b>.</div>';
+    document.getElementById("sub").textContent="";document.getElementById("bar").style.width="0";return;
+  }
+  const total=people.length, doneAll=people.filter(fin1).length;
+  let html="";
+  for(const [key,mk,en] of SECTIONS){
+    const all=people.filter(p=>p.sec===key);
+    const dn=all.filter(fin1).length;
+    let list=all.filter(p=>!term||(p.uid+" "+p.name+" "+p.title).toLowerCase().includes(term));
+    if(hide.checked) list=list.filter(p=>!fin1(p));
+    if(!list.length) continue;
+    const pend=list.filter(p=>!fin1(p)), fin=list.filter(fin1);
+    const rf=tab===1?row1:row2;
+    html+=`<section><h2><span>${mk} <small>· ${en}</small></span><small>${all.length-dn} left of ${all.length}</small></h2>
+      ${tab===1?`<div class="cols"><span>ID · Name</span><span>Title</span><span>Photo #</span><span>Card</span><span>Source</span><span>Status</span><span>Notes</span></div>`
+               :`<div class="cols d"><span>ID · Name</span><span>Title</span><span>Photo</span><span>Design</span></div>`}
+      ${pend.map(rf).join("")}
+      ${fin.length&&pend.length?`<div class="sep">Done (${fin.length})</div>`:""}
+      ${fin.map(rf).join("")}</section>`;
+  }
+  main.innerHTML=html||`<div class="empty">No matches.</div>`;
+  document.getElementById("bar").style.width=(doneAll/total*100)+"%";
+  document.getElementById("sub").textContent= tab===1
+    ? `${doneAll} of ${total} DONE · ${total-doneAll} left to collect`
+    : `${doneAll} of ${total} designs finished · ${total-doneAll} left to design`;
+  document.getElementById("t1").classList.toggle("on",tab===1);
+  document.getElementById("t2").classList.toggle("on",tab===2);
+}
+const byId=id=>people.find(p=>p.id===id);
+main.addEventListener("change",e=>{
+  const t=e.target, row=t.closest(".row"); if(!row) return;
+  const p=byId(row.dataset.id), k=t.dataset.k; if(!p||!k) return;
+  if(t.type==="checkbox"){ set(p,k,t.checked); render(); }
+  else if(k==="status"){ set(p,"status",t.value); render(); }
+  else if(k==="src"){ set(p,"src",t.value); }
+  else if(k==="note") set(p,"note",t.value);
+  else set(p,"n",t.value.trim());
+});
+main.addEventListener("input",e=>{
+  const t=e.target, row=t.closest(".row"); if(!row||(t.dataset.k!=="n"&&t.dataset.k!=="note")) return;
+  set(byId(row.dataset.id),t.dataset.k==="note"?"note":"n",t.value);
+});
+document.getElementById("t1").onclick=()=>{tab=1;render();window.scrollTo(0,0)};
+document.getElementById("t2").onclick=()=>{tab=2;render();window.scrollTo(0,0)};
+q.addEventListener("input",render);
+hide.addEventListener("change",render);
+document.getElementById("exp").onclick=async()=>{
+  const s=JSON.stringify(st);
+  try{await navigator.clipboard.writeText(s);alert("Backup copied. Paste it somewhere safe (e.g. Notes).");}catch(e){prompt("Copy this backup:",s);}
+};
+document.getElementById("imp").onclick=()=>{
+  const s=prompt("Paste backup here:"); if(!s) return;
+  try{const o=JSON.parse(s); if(o&&o.f){st=o;persist();render();}}catch(e){alert("Not a valid backup.");}
+};
+
+// ---- cloud sync (Firebase) ----
+const FB={apiKey:"AIzaSyCY1OB2mZglCJOlapqkbcpU56p_3O8-bnY",authDomain:"pulmo-83ba7.firebaseapp.com",projectId:"pulmo-83ba7",storageBucket:"pulmo-83ba7.firebasestorage.app",messagingSenderId:"967390120943",appId:"1:967390120943:web:81e2b12611528c1390c41a"};
+let docRef=null, peopleRef=null, firstSync=true;
+const msg=m=>{document.getElementById("syncmsg").textContent=m;};
+function push(id,k,v){
+  if(!docRef) return;
+  try{ docRef.set({f:{[id]:{[k]:v}}},{merge:true}).catch(e=>msg("Sync error: "+e.code)); }catch(e){}
+}
+function startSync(user){
+  const db=firebase.firestore();
+  docRef=db.collection("pulmo").doc("state");
+  peopleRef=db.collection("pulmo").doc("people");
+  msg("Syncing as "+user.email+"…");
+  document.getElementById("signin").textContent="Sign out";
+  peopleRef.onSnapshot(s=>{
+    if(s.metadata.hasPendingWrites) return;
+    if(s.exists&&s.data().list){ try{ savePeople(JSON.parse(s.data().list),true); }catch(e){} }
+    else if(people.length){ peopleRef.set({list:JSON.stringify(D_cur())}).catch(()=>{}); }
+  });
+  docRef.onSnapshot(snap=>{
+    if(snap.metadata.hasPendingWrites) return;
+    const cloud=(snap.exists&&snap.data().f)||{};
+    if(firstSync){
+      firstSync=false;
+      const up={};
+      for(const id in st.f) for(const k in st.f[id]){ if(!(cloud[id]&&k in cloud[id])){ (up[id]=up[id]||{})[k]=st.f[id][k]; } }
+      if(Object.keys(up).length) docRef.set({f:up},{merge:true}).catch(e=>msg("Sync error: "+e.code));
+    }
+    for(const id in cloud) st.f[id]=Object.assign(st.f[id]||{},cloud[id]);
+    persist();
+    const a=document.activeElement;
+    if(!(a&&a.tagName==="INPUT"&&a.type==="text"&&main.contains(a))) render();
+    msg("Synced ✓ "+user.email+(snap.metadata.fromCache?" (offline)":""));
+  },err=>msg("Sync error: "+err.code));
+}
+function initFB(){
+  if(typeof firebase==="undefined"){ msg("Offline – saved on this phone only"); return; }
+  firebase.initializeApp(FB);
+  try{ firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+  const auth=firebase.auth();
+  auth.onAuthStateChanged(u=>{
+    if(u){ startSync(u); }
+    else{ docRef=null; peopleRef=null; firstSync=true; document.getElementById("signin").textContent="Sign in with Google"; msg("Not synced – saved on this phone only"); }
+  });
+  document.getElementById("signin").onclick=async()=>{
+    if(auth.currentUser){ await auth.signOut(); return; }
+    const pr=new firebase.auth.GoogleAuthProvider();
+    try{ await auth.signInWithPopup(pr); }
+    catch(e){ if(e.code!=="auth/popup-closed-by-user"){ try{ await auth.signInWithRedirect(pr); }catch(e2){ msg("Sign-in error: "+e2.code); } } }
+  };
+  auth.getRedirectResult().catch(e=>msg("Sign-in error: "+e.code));
+}
+document.getElementById("ldp").onclick=()=>document.getElementById("pf").click();
+document.getElementById("pf").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{ const arr=JSON.parse(await f.text()); if(!Array.isArray(arr)) throw 0; savePeople(arr,false); }catch(x){ alert("Not a valid staff list file."); }
+  e.target.value="";
+};
+render();
+initFB();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+</script>
+</body>
+</html>
