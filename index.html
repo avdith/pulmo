@@ -105,6 +105,7 @@ section.col>:not(h2){display:none}
   <div class="tools">
     <input type="search" id="q" placeholder="Барај име, звање или ID…" autocomplete="off">
     <label class="tgl"><input type="checkbox" id="hide"> Сокриј готови</label>
+    <label class="tgl"><input type="checkbox" id="nopic"> Само без слика (без отказ)</label>
   </div>
   <div class="tools tb2" id="tb">
     <select id="flt" aria-label="Прикажи">
@@ -189,7 +190,7 @@ function set(p,k,v){ (st.f[p.id]=st.f[p.id]||{})[k]=v; persist(); push(p.id,k,v)
 function persist(){ try{localStorage.setItem(LS,JSON.stringify(st));}catch(e){} }
 
 let tab=1;
-const main=document.getElementById("main"), q=document.getElementById("q"), hide=document.getElementById("hide");
+const main=document.getElementById("main"), q=document.getElementById("q"), hide=document.getElementById("hide"), nopic=document.getElementById("nopic");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function row1(p){
@@ -240,11 +241,11 @@ function visible(){
   const term=q.value.trim().toLowerCase();
   const fin1=tab===1?isDone:deOf;
   return people.filter(p=>(!term||(p.uid+" "+p.name+" "+p.title).toLowerCase().includes(term))
-    && (!hide.checked||!fin1(p)) && (tab!==1||FLT[flt.value](p)));
+    && (!hide.checked||!fin1(p)) && (!nopic.checked||(!isDone(p)&&!/ОТКАЗ/i.test(noteOf(p)||""))) && (tab!==1||FLT[flt.value](p)));
 }
 function render(){
   const fin1=tab===1?isDone:deOf;
-  const filtering=!!q.value.trim()||hide.checked||(tab===1&&flt.value!=="all");
+  const filtering=!!q.value.trim()||hide.checked||nopic.checked||(tab===1&&flt.value!=="all");
   document.getElementById("tb").style.display="flex";
   flt.style.display=tab===1?"":"none";
   if(!people.length){
@@ -318,6 +319,7 @@ document.getElementById("t1").onclick=()=>{tab=1;render();window.scrollTo(0,0)};
 document.getElementById("t2").onclick=()=>{tab=2;render();window.scrollTo(0,0)};
 q.addEventListener("input",render);
 hide.addEventListener("change",render);
+nopic.addEventListener("change",render);
 flt.addEventListener("change",render);
 srt.addEventListener("change",render);
 document.getElementById("pdf").onclick=exportPDF;
