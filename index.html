@@ -7,7 +7,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Pulmo Photo</title>
+<title>Пулмо – слики</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -97,58 +97,58 @@ section.col>:not(h2){display:none}
 <body>
 <div class="wrap">
 <header>
-  <h1>Pulmo staff photo checklist</h1>
-  <div class="tabs"><button id="t1" class="on">1 · Collect</button><button id="t2">2 · Design</button></div>
+  <h1>Пулмо – листа за фотографирање</h1>
+  <div class="tabs"><button id="t1" class="on">1 · Собирање</button><button id="t2">2 · Дизајн</button></div>
   <div class="sub" id="sub"></div>
-  <div class="sync"><span id="syncmsg">Not synced</span><button id="signin">Sign in with Google</button></div>
+  <div class="sync"><span id="syncmsg">Не е синхронизирано</span><button id="signin">Најава со Google</button></div>
   <div class="bar"><i id="bar"></i></div>
   <div class="tools">
-    <input type="search" id="q" placeholder="Search name, title or ID…" autocomplete="off">
-    <label class="tgl"><input type="checkbox" id="hide"> Hide done</label>
+    <input type="search" id="q" placeholder="Барај име, звање или ID…" autocomplete="off">
+    <label class="tgl"><input type="checkbox" id="hide"> Сокриј готови</label>
   </div>
   <div class="tools tb2" id="tb">
-    <select id="flt" aria-label="Show">
-      <option value="all">Show: everyone</option>
-      <option value="todo">Incomplete only</option>
-      <option value="done">DONE only</option>
-      <option value="nonum">No photo # yet</option>
-      <option value="email">Email Photo (to be emailed)</option>
+    <select id="flt" aria-label="Прикажи">
+      <option value="all">Прикажи: сите</option>
+      <option value="todo">Само незавршени</option>
+      <option value="done">Само ГОТОВИ</option>
+      <option value="nonum">Уште нема број на слика</option>
+      <option value="email">Слика по е-пошта (треба да испратат)</option>
       <option value="photo">Сликан</option>
-      <option value="nosrc">No info: Сликан or email?</option>
-      <option value="hascard">Card collected</option>
-      <option value="nocard">Card NOT collected</option>
+      <option value="nosrc">Нема информација: сликан или е-пошта?</option>
+      <option value="hascard">Картичката е земена</option>
+      <option value="nocard">Картичката НЕ е земена</option>
     </select>
-    <select id="srt" aria-label="Sort">
-      <option value="sec">Sort: by group</option>
-      <option value="id">By ID</option>
-      <option value="name">By name A–Z</option>
-      <option value="status">By status (Incomplete first)</option>
-      <option value="src">By source (no info first)</option>
-      <option value="num">By photo #</option>
+    <select id="srt" aria-label="Подреди">
+      <option value="sec">Подреди: по група</option>
+      <option value="id">По ID</option>
+      <option value="name">По име А–Ш</option>
+      <option value="status">По статус (незавршени први)</option>
+      <option value="src">По извор (без информација први)</option>
+      <option value="num">По број на слика</option>
     </select>
-    <button id="fold" class="gh">Fold all</button>
-    <button id="pdf">Export PDF</button>
+    <button id="fold" class="gh">Собери ги сите</button>
+    <button id="pdf">Извези PDF</button>
   </div>
 </header>
 <main id="main"></main>
 <div id="pv"></div>
 <div class="foot">
-  <button id="exp">Copy backup</button>
-  <button id="imp">Restore backup</button>
-  <button id="ldp">Load staff list</button><input type="file" id="pf" accept=".json,application/json" hidden>
+  <button id="exp">Копирај бекап</button>
+  <button id="imp">Врати бекап</button>
+  <button id="ldp">Вчитај листа на вработени</button><input type="file" id="pf" accept=".json,application/json" hidden>
 </div>
 </div>
 
 <script>
 // [section, listNo, title, name, photo#, photographedByDefault, note]
 const SECTIONS = [
-  ["doc","Doctors of medicine","Doctors of medicine"],
-  ["nur","Nurses / technicians","Nurses / technicians"],
-  ["rad","Radiology technologists","Radiology technologists"],
-  ["adm","Administration","Administration"],
-  ["hs","Health associates","Health associates"],
-  ["aux","Support staff","Support staff"],
-  ["oth","Contract staff","Contract staff"]
+  ["doc","ДОКТОРИ НА МЕДИЦИНА",""],
+  ["nur","МЕДИЦИНСКИ СЕСТРИ/ТЕХНИЧАРИ",""],
+  ["rad","ДИПЛОМИРАНИ РАДИОЛОШКИ ТЕХНОЛОЗИ",""],
+  ["adm","АДМИНИСТРАЦИЈА",""],
+  ["hs","ЗДРАВСТВЕНИ СОРАБОТНИЦИ",""],
+  ["aux","ПОМОШНО ТЕХНИЧКИ ПЕРСОНАЛ",""],
+  ["oth","ДОГОВОР НА ДЕЛО",""]
 ];
 const SECNO={doc:1,nur:2,rad:3,adm:4,hs:5,aux:6,oth:7};
 let people=[];
@@ -159,7 +159,7 @@ function D_cur(){ try{return JSON.parse(localStorage.getItem(LSP)||"[]");}catch(
 function savePeople(arr,fromCloud){
   setPeople(arr);
   try{localStorage.setItem(LSP,JSON.stringify(arr));}catch(e){}
-  if(!fromCloud&&peopleRef){ peopleRef.set({list:JSON.stringify(arr)}).catch(e=>msg("Sync error: "+e.code)); }
+  if(!fromCloud&&peopleRef){ peopleRef.set({list:JSON.stringify(arr)}).catch(e=>msg("Грешка при синхронизација: "+e.code)); }
   render();
 }
 
@@ -197,18 +197,18 @@ function row1(p){
   return `<div class="row${d?" done":""}" data-id="${p.id}">
     <div><div class="name"><span class="n">${p.uid}</span><span class="t">${esc(p.name)}</span></div><div class="title">${esc(p.title)}</div></div>
     <div class="ctl">
-      <input type="text" inputmode="decimal" placeholder="Photo #" value="${esc(numOf(p))}" data-k="n" aria-label="Photo number">
-      <label class="cb"><input type="checkbox" data-k="card" ${cardOf(p)?"checked":""} aria-label="Card collected"><span class="m">Card</span></label>
-      <select data-k="src" aria-label="Сликан or email photo">
-        <option value=""${s===""?" selected":""}>— source —</option>
+      <input type="text" inputmode="decimal" placeholder="Бр. на слика" value="${esc(numOf(p))}" data-k="n" aria-label="Број на слика">
+      <label class="cb"><input type="checkbox" data-k="card" ${cardOf(p)?"checked":""} aria-label="Картичката е земена"><span class="m">Картичка</span></label>
+      <select data-k="src" aria-label="Сликан или слика по е-пошта">
+        <option value=""${s===""?" selected":""}>— извор —</option>
         <option value="photo"${s==="photo"?" selected":""}>Сликан</option>
-        <option value="email"${s==="email"?" selected":""}>Email Photo</option>
+        <option value="email"${s==="email"?" selected":""}>Е-пошта</option>
       </select>
-      <select data-k="status" class="st ${d?"done":"todo"}" aria-label="Status">
-        <option value="todo"${d?"":" selected"}>Incomplete</option>
-        <option value="done"${d?" selected":""}>DONE</option>
+      <select data-k="status" class="st ${d?"done":"todo"}" aria-label="Статус">
+        <option value="todo"${d?"":" selected"}>Незавршено</option>
+        <option value="done"${d?" selected":""}>ГОТОВО</option>
       </select>
-      <input type="text" class="nt" placeholder="Notes" value="${esc(noteOf(p))}" data-k="note" aria-label="Notes">
+      <input type="text" class="nt" placeholder="Забелешки" value="${esc(noteOf(p))}" data-k="note" aria-label="Забелешки">
     </div>
   </div>`;
 }
@@ -217,8 +217,8 @@ function row2(p){
   return `<div class="row d${d?" done":""}" data-id="${p.id}">
     <div><div class="name"><span class="n">${p.uid}</span><span class="t">${esc(p.name)}</span></div><div class="title">${esc(p.title)}</div></div>
     <div class="ctl">
-      <label class="cb"><input type="checkbox" data-k="ph" ${phOf(p)?"checked":""} aria-label="Photo"><span class="m">Photo</span></label>
-      <label class="cb"><input type="checkbox" data-k="de" ${d?"checked":""} aria-label="Design"><span class="m">Design</span></label>
+      <label class="cb"><input type="checkbox" data-k="ph" ${phOf(p)?"checked":""} aria-label="Слика"><span class="m">Слика</span></label>
+      <label class="cb"><input type="checkbox" data-k="de" ${d?"checked":""} aria-label="Дизајн"><span class="m">Дизајн</span></label>
     </div>
   </div>`;
 }
@@ -248,17 +248,17 @@ function render(){
   document.getElementById("tb").style.display="flex";
   flt.style.display=tab===1?"":"none";
   if(!people.length){
-    main.innerHTML='<div class="empty">No staff list loaded yet.<br>Sign in with Google (top), or tap <b>Load staff list</b> below and choose <b>staff.json</b>.</div>';
+    main.innerHTML='<div class="empty">Листата на вработени не е вчитана.<br>Најавете се со Google (горе) или притиснете <b>Вчитај листа на вработени</b> долу и изберете <b>staff.json</b>.</div>';
     document.getElementById("sub").textContent="";document.getElementById("bar").style.width="0";return;
   }
   const total=people.length, doneAll=people.filter(fin1).length;
   const vis=visible(), rf=tab===1?row1:row2;
-  const hdr=tab===1?`<div class="cols"><span>ID · Name</span><span>Title</span><span>Photo #</span><span>Card</span><span>Source</span><span>Status</span><span>Notes</span></div>`
-               :`<div class="cols d"><span>ID · Name</span><span>Title</span><span>Photo</span><span>Design</span></div>`;
+  const hdr=tab===1?`<div class="cols"><span>ID · Име</span><span>Звање</span><span>Бр. слика</span><span>Картичка</span><span>Извор</span><span>Статус</span><span>Забелешки</span></div>`
+               :`<div class="cols d"><span>ID · Име</span><span>Звање</span><span>Слика</span><span>Дизајн</span></div>`;
   let html="";
   if(srt.value!=="sec"){
     const list=vis.slice().sort(SRT[srt.value]);
-    if(list.length) html=`<section><h2><span>${esc(srt.options[srt.selectedIndex].text)}</span><small>${list.length} shown</small></h2>${hdr}${list.map(rf).join("")}</section>`;
+    if(list.length) html=`<section><h2><span>${esc(srt.options[srt.selectedIndex].text)}</span><small>${list.length} прикажани</small></h2>${hdr}${list.map(rf).join("")}</section>`;
   } else {
     for(const [key,mk,en] of SECTIONS){
       const all=people.filter(p=>p.sec===key);
@@ -267,36 +267,36 @@ function render(){
       if(!list.length) continue;
       const pend=list.filter(p=>!fin1(p)), fin=list.filter(fin1);
       const cl=collapsed[key]&&!filtering;
-      html+=`<section class="${cl?"col":""}"><h2 data-sec="${key}"><span>${cl?"▸":"▾"} ${mk} <small>· ${en}</small></span><small>${all.length-dn} left of ${all.length}</small></h2>
+      html+=`<section class="${cl?"col":""}"><h2 data-sec="${key}"><span>${cl?"▸":"▾"} ${mk}</span><small>${all.length-dn} остануваат од ${all.length}</small></h2>
         ${hdr}
         ${pend.map(rf).join("")}
-        ${fin.length&&pend.length?`<div class="sep">Done (${fin.length})</div>`:""}
+        ${fin.length&&pend.length?`<div class="sep">Готови (${fin.length})</div>`:""}
         ${fin.map(rf).join("")}</section>`;
     }
   }
-  main.innerHTML=html||`<div class="empty">No matches.</div>`;
+  main.innerHTML=html||`<div class="empty">Нема резултати.</div>`;
   document.getElementById("bar").style.width=(doneAll/total*100)+"%";
   document.getElementById("sub").textContent= (tab===1
-    ? `${doneAll} of ${total} DONE · ${total-doneAll} left to collect`
-    : `${doneAll} of ${total} designs finished · ${total-doneAll} left to design`)
-    + (vis.length!==total?` · showing ${vis.length}`:"");
+    ? `${doneAll} од ${total} ГОТОВИ · уште ${total-doneAll} за собирање`
+    : `${doneAll} од ${total} дизајни завршени · уште ${total-doneAll} за дизајн`)
+    + (vis.length!==total?` · прикажани ${vis.length}`:"");
   document.getElementById("t1").classList.toggle("on",tab===1);
   document.getElementById("t2").classList.toggle("on",tab===2);
 }
 function exportPDF(){
   const vis=visible(), by=srt.value, ck=b=>b?"✓":"";
-  const lab=[tab===1?"Collect":"Design", tab===1&&flt.value!=="all"?flt.options[flt.selectedIndex].text:"", by!=="sec"?srt.options[srt.selectedIndex].text:""].filter(Boolean).join(" · ");
-  const SL={"":"—",photo:"Сликан",email:"Email Photo"};
-  const cols=tab===1?["ID","Name","Title","Photo #","Card","Source","Status","Notes"]:["ID","Name","Title","Photo","Design"];
+  const lab=[tab===1?"Собирање":"Дизајн", tab===1&&flt.value!=="all"?flt.options[flt.selectedIndex].text:"", by!=="sec"?srt.options[srt.selectedIndex].text:""].filter(Boolean).join(" · ");
+  const SL={"":"—",photo:"Сликан",email:"Е-пошта"};
+  const cols=tab===1?["ID","Име","Звање","Бр. слика","Картичка","Извор","Статус","Забелешки"]:["ID","Име","Звање","Слика","Дизајн"];
   const tr=p=>tab===1
-    ?`<tr><td>${p.uid}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.title)}</td><td>${esc(numOf(p))}</td><td>${ck(cardOf(p))}</td><td>${SL[src(p)]}</td><td>${isDone(p)?"DONE":"Incomplete"}</td><td>${esc(noteOf(p))}</td></tr>`
+    ?`<tr><td>${p.uid}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.title)}</td><td>${esc(numOf(p))}</td><td>${ck(cardOf(p))}</td><td>${SL[src(p)]}</td><td>${isDone(p)?"ГОТОВО":"Незавршено"}</td><td>${esc(noteOf(p))}</td></tr>`
     :`<tr><td>${p.uid}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.title)}</td><td>${ck(phOf(p))}</td><td>${ck(deOf(p))}</td></tr>`;
   let body="";
   if(by==="sec"){
     for(const [key,mk] of SECTIONS){ const l=vis.filter(p=>p.sec===key); if(l.length) body+=`<tr><td class="g" colspan="${cols.length}">${mk} (${l.length})</td></tr>`+l.map(tr).join(""); }
   } else body=vis.slice().sort(SRT[by]).map(tr).join("");
   const d=new Date().toLocaleDateString("en-GB");
-  document.getElementById("pv").innerHTML=`<h1>Pulmo staff photo checklist</h1><div class="pm">${esc(lab)} · ${vis.length} people · ${d}</div>
+  document.getElementById("pv").innerHTML=`<h1>Пулмо – листа за фотографирање</h1><div class="pm">${esc(lab)} · ${vis.length} лица · ${d}</div>
     <table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
   setTimeout(()=>window.print(),50);
 }
@@ -322,14 +322,14 @@ flt.addEventListener("change",render);
 srt.addEventListener("change",render);
 document.getElementById("pdf").onclick=exportPDF;
 main.addEventListener("click",e=>{const h=e.target.closest("h2[data-sec]"); if(!h) return; const k=h.dataset.sec; collapsed[k]=!collapsed[k]; saveCol(); render();});
-document.getElementById("fold").onclick=()=>{const any=SECTIONS.some(([k])=>!collapsed[k]); SECTIONS.forEach(([k])=>collapsed[k]=any); saveCol(); document.getElementById("fold").textContent=any?"Unfold all":"Fold all"; render();};
+document.getElementById("fold").onclick=()=>{const any=SECTIONS.some(([k])=>!collapsed[k]); SECTIONS.forEach(([k])=>collapsed[k]=any); saveCol(); document.getElementById("fold").textContent=any?"Рашири ги сите":"Собери ги сите"; render();};
 document.getElementById("exp").onclick=async()=>{
   const s=JSON.stringify(st);
-  try{await navigator.clipboard.writeText(s);alert("Backup copied. Paste it somewhere safe (e.g. Notes).");}catch(e){prompt("Copy this backup:",s);}
+  try{await navigator.clipboard.writeText(s);alert("Бекапот е копиран. Залепете го на безбедно место (на пр. Белешки).");}catch(e){prompt("Копирајте го бекапот:",s);}
 };
 document.getElementById("imp").onclick=()=>{
-  const s=prompt("Paste backup here:"); if(!s) return;
-  try{const o=JSON.parse(s); if(o&&o.f){st=o;persist();render();}}catch(e){alert("Not a valid backup.");}
+  const s=prompt("Залепете го бекапот тука:"); if(!s) return;
+  try{const o=JSON.parse(s); if(o&&o.f){st=o;persist();render();}}catch(e){alert("Невалиден бекап.");}
 };
 
 // ---- cloud sync (Firebase) ----
@@ -338,14 +338,14 @@ let docRef=null, peopleRef=null, firstSync=true;
 const msg=m=>{document.getElementById("syncmsg").textContent=m;};
 function push(id,k,v){
   if(!docRef) return;
-  try{ docRef.set({f:{[id]:{[k]:v}}},{merge:true}).catch(e=>msg("Sync error: "+e.code)); }catch(e){}
+  try{ docRef.set({f:{[id]:{[k]:v}}},{merge:true}).catch(e=>msg("Грешка при синхронизација: "+e.code)); }catch(e){}
 }
 function startSync(user){
   const db=firebase.firestore();
   docRef=db.collection("pulmo").doc("state");
   peopleRef=db.collection("pulmo").doc("people");
-  msg("Syncing as "+user.email+"…");
-  document.getElementById("signin").textContent="Sign out";
+  msg("Синхронизација како "+user.email+"…");
+  document.getElementById("signin").textContent="Одјава";
   peopleRef.onSnapshot(s=>{
     if(s.metadata.hasPendingWrites) return;
     if(s.exists&&s.data().list){ try{ savePeople(JSON.parse(s.data().list),true); }catch(e){} }
@@ -358,36 +358,36 @@ function startSync(user){
       firstSync=false;
       const up={};
       for(const id in st.f) for(const k in st.f[id]){ if(!(cloud[id]&&k in cloud[id])){ (up[id]=up[id]||{})[k]=st.f[id][k]; } }
-      if(Object.keys(up).length) docRef.set({f:up},{merge:true}).catch(e=>msg("Sync error: "+e.code));
+      if(Object.keys(up).length) docRef.set({f:up},{merge:true}).catch(e=>msg("Грешка при синхронизација: "+e.code));
     }
     for(const id in cloud) st.f[id]=Object.assign(st.f[id]||{},cloud[id]);
     persist();
     const a=document.activeElement;
     if(!(a&&a.tagName==="INPUT"&&a.type==="text"&&main.contains(a))) render();
-    msg("Synced ✓ "+user.email+(snap.metadata.fromCache?" (offline)":""));
-  },err=>msg("Sync error: "+err.code));
+    msg("Синхронизирано ✓ "+user.email+(snap.metadata.fromCache?" (офлајн)":""));
+  },err=>msg("Грешка при синхронизација: "+err.code));
 }
 function initFB(){
-  if(typeof firebase==="undefined"){ msg("Offline – saved on this phone only"); return; }
+  if(typeof firebase==="undefined"){ msg("Офлајн – зачувано само на овој телефон"); return; }
   firebase.initializeApp(FB);
   try{ firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
   const auth=firebase.auth();
   auth.onAuthStateChanged(u=>{
     if(u){ startSync(u); }
-    else{ docRef=null; peopleRef=null; firstSync=true; document.getElementById("signin").textContent="Sign in with Google"; msg("Not synced – saved on this phone only"); }
+    else{ docRef=null; peopleRef=null; firstSync=true; document.getElementById("signin").textContent="Најава со Google"; msg("Не е синхронизирано – зачувано само на овој телефон"); }
   });
   document.getElementById("signin").onclick=async()=>{
     if(auth.currentUser){ await auth.signOut(); return; }
     const pr=new firebase.auth.GoogleAuthProvider();
     try{ await auth.signInWithPopup(pr); }
-    catch(e){ if(e.code!=="auth/popup-closed-by-user"){ try{ await auth.signInWithRedirect(pr); }catch(e2){ msg("Sign-in error: "+e2.code); } } }
+    catch(e){ if(e.code!=="auth/popup-closed-by-user"){ try{ await auth.signInWithRedirect(pr); }catch(e2){ msg("Грешка при најава: "+e2.code); } } }
   };
-  auth.getRedirectResult().catch(e=>msg("Sign-in error: "+e.code));
+  auth.getRedirectResult().catch(e=>msg("Грешка при најава: "+e.code));
 }
 document.getElementById("ldp").onclick=()=>document.getElementById("pf").click();
 document.getElementById("pf").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
-  try{ const arr=JSON.parse(await f.text()); if(!Array.isArray(arr)) throw 0; savePeople(arr,false); }catch(x){ alert("Not a valid staff list file."); }
+  try{ const arr=JSON.parse(await f.text()); if(!Array.isArray(arr)) throw 0; savePeople(arr,false); }catch(x){ alert("Невалидна датотека со листа."); }
   e.target.value="";
 };
 render();
