@@ -113,8 +113,8 @@ section.col>:not(h2){display:none}
       <option value="done">DONE only</option>
       <option value="nonum">No photo # yet</option>
       <option value="email">Email Photo (to be emailed)</option>
-      <option value="photo">SLIKAN</option>
-      <option value="nosrc">No info: SLIKAN or email?</option>
+      <option value="photo">Сликан</option>
+      <option value="nosrc">No info: Сликан or email?</option>
       <option value="hascard">Card collected</option>
       <option value="nocard">Card NOT collected</option>
     </select>
@@ -199,9 +199,9 @@ function row1(p){
     <div class="ctl">
       <input type="text" inputmode="decimal" placeholder="Photo #" value="${esc(numOf(p))}" data-k="n" aria-label="Photo number">
       <label class="cb"><input type="checkbox" data-k="card" ${cardOf(p)?"checked":""} aria-label="Card collected"><span class="m">Card</span></label>
-      <select data-k="src" aria-label="SLIKAN or email photo">
+      <select data-k="src" aria-label="Сликан or email photo">
         <option value=""${s===""?" selected":""}>— source —</option>
-        <option value="photo"${s==="photo"?" selected":""}>SLIKAN</option>
+        <option value="photo"${s==="photo"?" selected":""}>Сликан</option>
         <option value="email"${s==="email"?" selected":""}>Email Photo</option>
       </select>
       <select data-k="status" class="st ${d?"done":"todo"}" aria-label="Status">
@@ -286,7 +286,7 @@ function render(){
 function exportPDF(){
   const vis=visible(), by=srt.value, ck=b=>b?"✓":"";
   const lab=[tab===1?"Collect":"Design", tab===1&&flt.value!=="all"?flt.options[flt.selectedIndex].text:"", by!=="sec"?srt.options[srt.selectedIndex].text:""].filter(Boolean).join(" · ");
-  const SL={"":"—",photo:"SLIKAN",email:"Email Photo"};
+  const SL={"":"—",photo:"Сликан",email:"Email Photo"};
   const cols=tab===1?["ID","Name","Title","Photo #","Card","Source","Status","Notes"]:["ID","Name","Title","Photo","Design"];
   const tr=p=>tab===1
     ?`<tr><td>${p.uid}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.title)}</td><td>${esc(numOf(p))}</td><td>${ck(cardOf(p))}</td><td>${SL[src(p)]}</td><td>${isDone(p)?"DONE":"Incomplete"}</td><td>${esc(noteOf(p))}</td></tr>`
