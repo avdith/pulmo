@@ -98,7 +98,7 @@ section.col>:not(h2){display:none}
 <div class="wrap">
 <header>
   <h1>Пулмо – листа за фотографирање</h1>
-  <div class="tabs"><button id="t1" class="on">1 · Собирање</button><button id="t2">2 · Дизајн</button></div>
+  <div class="tabs"><button id="t1" class="on">1 · Собирање</button><button id="t2">2 · Дизајн</button><button id="t3">3 · Распоред</button></div>
   <div class="sub" id="sub"></div>
   <div class="sync"><span id="syncmsg">Не е синхронизирано</span><button id="signin">Најава со Google</button></div>
   <div class="bar"><i id="bar"></i></div>
@@ -140,6 +140,7 @@ section.col>:not(h2){display:none}
 </div>
 </div>
 
+<script src="schedule.js"></script>
 <script>
 // [section, listNo, title, name, photo#, photographedByDefault, note]
 const SECTIONS = [
@@ -244,6 +245,9 @@ function visible(){
     && (!hide.checked||!fin1(p)) && (!nopic.checked||(!isDone(p)&&!/ОТКАЗ/i.test(noteOf(p)||""))) && (tab!==1||FLT[flt.value](p)));
 }
 function render(){
+  document.getElementById("t3").classList.toggle("on",tab===3);
+  if(tab===3){ document.getElementById("t1").classList.remove("on"); document.getElementById("t2").classList.remove("on"); SCH.render(); return; }
+  SCH.unrender();
   const fin1=tab===1?isDone:deOf;
   const filtering=!!q.value.trim()||hide.checked||nopic.checked||(tab===1&&flt.value!=="all");
   document.getElementById("tb").style.display="flex";
@@ -317,6 +321,7 @@ main.addEventListener("input",e=>{
 });
 document.getElementById("t1").onclick=()=>{tab=1;render();window.scrollTo(0,0)};
 document.getElementById("t2").onclick=()=>{tab=2;render();window.scrollTo(0,0)};
+document.getElementById("t3").onclick=()=>{tab=3;render();window.scrollTo(0,0)};
 q.addEventListener("input",render);
 hide.addEventListener("change",render);
 nopic.addEventListener("change",render);
@@ -346,6 +351,7 @@ function startSync(user){
   const db=firebase.firestore();
   docRef=db.collection("pulmo").doc("state");
   peopleRef=db.collection("pulmo").doc("people");
+  SCH.attach(db);
   msg("Синхронизација како "+user.email+"…");
   document.getElementById("signin").textContent="Одјава";
   peopleRef.onSnapshot(s=>{
@@ -376,7 +382,7 @@ function initFB(){
   const auth=firebase.auth();
   auth.onAuthStateChanged(u=>{
     if(u){ startSync(u); }
-    else{ docRef=null; peopleRef=null; firstSync=true; document.getElementById("signin").textContent="Најава со Google"; msg("Не е синхронизирано – зачувано само на овој телефон"); }
+    else{ SCH.detach(); docRef=null; peopleRef=null; firstSync=true; document.getElementById("signin").textContent="Најава со Google"; msg("Не е синхронизирано – зачувано само на овој телефон"); }
   });
   document.getElementById("signin").onclick=async()=>{
     if(auth.currentUser){ await auth.signOut(); return; }
